@@ -44,16 +44,10 @@ if(new URLSearchParams(window.location.search).get('d')){qcomplexity = new URLSe
 
 var qorientation =R.random_int(1,2) < 2 ? "portrait" : "landscape";
 var qframecolor = R.random_int(0,3) < 1 ? "White" : R.random_int(1,3) < 2 ? "Mocha" : "Random";
-var qspiky = R.random_int(1,30);
+
 var qdensity = R.random_int(5,15);
-var qspread = R.random_int(15,65);
-var qstyle = R.random_int(0,7) < 1 ? "Vertical" : R.random_int(1,7) < 2 ? "Horizontal" : R.random_int(1,7) < 3 ? "Hex" : R.random_int(1,7) < 4 ? "Rings" : R.random_int(1,7) < 5 ? "Diamonds" : R.random_int(1,7) < 6 ? "Triangles" : "Waves";
-var qrain = R.random_int(0,2) < 1 ? true : false;
-var qxwav = R.random_int(20,40);
-var qywav = R.random_int(9,23);
-var qxoss = 1.10+R.random_dec()*.3;
-var qyoss = 1.05+R.random_dec()*.3;
-var qmatwidth = R.random_int(50,100);
+
+var qmatwidth = R.random_int(50,75);
 
 
 
@@ -131,28 +125,6 @@ definitions = [
         options: {options: ["Random","White","Mocha"]},
     },
     {
-        id: "number_ripples",
-        name: "Dahlias",
-        type: "number",
-        default: qcomplexity,
-        options: {
-            min: 1,
-            max: 10,
-            step: 1,
-        },  
-    },
-    {
-        id: "spiky",
-        name: "Spikyness",
-        type: "number",
-        default: qspiky,
-        options: {
-            min: 1,
-            max: 30,
-            step: 1,
-        },  
-    },
-    {
         id: "density",
         name: "Detail",
         type: "number",
@@ -161,74 +133,6 @@ definitions = [
             min: 5,
             max: 15,
             step: 1,
-        },  
-    },
-    {
-        id: "spread",
-        name: "Spread",
-        type: "number",
-        default: qspread,
-        options: {
-            min: 15,
-            max: 65,
-            step: 1,
-        },  
-    },
-    {
-        id: "Style",
-        name: "Style",
-        type: "select",
-        default: qstyle,
-        options: {options: ["Vertical","Horizontal","Hex","Rings","Diamonds","Triangles","Waves"]},
-    },
-    {
-        id: "rain",
-        name: "Rain",
-        type: "boolean",
-        default: qrain,
-    },
-    {
-        id: "xwav",
-        name: "WaveX",
-        type: "number",
-        default: qxwav,
-        options: {
-            min: 20,
-            max: 40,
-            step: 1,
-        },  
-    },
-    {
-        id: "ywav",
-        name: "WaveY",
-        type: "number",
-        default: qywav,
-        options: {
-            min: 9,
-            max: 23,
-            step: 1,
-        },  
-    },
-    {
-        id: "xoss",
-        name: "WaveA",
-        type: "number",
-        default: qxoss,
-        options: {
-            min: 1.1,
-            max: 1.5,
-            step: .001,
-        },  
-    },
-    {
-        id: "yoss",
-        name: "WaveB",
-        type: "number",
-        default: qyoss,
-        options: {
-            min: 1.1,
-            max: 1.5,
-            step: .001,
         },  
     },
     {
@@ -251,43 +155,13 @@ definitions = [
 
 $fx.params(definitions)
 var scale = $fx.getParam('size');
-var stacks = $fx.getParam('layers');
+var stacks = $fx.getParam('layers'); stacks=5
 var numofcolors = $fx.getParam('colors');
-var numberofcircles=$fx.getParam("number_ripples");
 var meshDensity = $fx.getParam("density");
-if ($fx.getParam("Style") == "Vertical"){backgroundStyle = 0};
-if ($fx.getParam("Style") == "Horizontal"){backgroundStyle = 1};
-if ($fx.getParam("Style") == "Hex"){backgroundStyle = 2};
-if ($fx.getParam("Style") == "Rings"){backgroundStyle = 3};
-if ($fx.getParam("Style") == "Diamonds"){backgroundStyle = 4};
-if ($fx.getParam("Style") == "Triangles"){backgroundStyle = 5};
-if ($fx.getParam("Style") == "Waves"){backgroundStyle = 6};
-var raining = 0; if ($fx.getParam("rain") ){var raining = 10};
-var petalspiky = $fx.getParam('spiky');
-  var lspread =  $fx.getParam('spread'); 
+console.log("density: "+meshDensity)
 
-    
-var xwav = R.random_int(20, 40);
-    console.log('xwav: '+xwav);//xwav = 40;
-var ywav = R.random_int(9, 23);
-    console.log('ywav: '+ywav);//ywav = 23;
-var xoss = 1.10+R.random_dec()*.3;
-    console.log('xoss: '+xoss);//xoss = 1.10
-var yoss = 1.05+R.random_dec()*.3;
-    
-var xwav = $fx.getParam('xwav'); 
-var ywav = $fx.getParam('ywav'); 
-var xoss = $fx.getParam('xoss'); 
-var xoss = $fx.getParam('yoss'); 
 
-    console.log('yoss: '+yoss);//yoss = 1.16
-    console.log('lineSpread: '+lspread);
-    
-    console.log('backgroundstyle: '+backgroundStyle); 
-    console.log('rain: '+raining);
-    console.log('spikeyness: '+petalspiky)
-    console.log('flowers: '+numberofcircles);
-    console.log('meshDensity: '+meshDensity);
+
 
 //Set the properties for the artwork where 100 = 1 inch
 var wide = 800; 
@@ -364,13 +238,7 @@ console.log(numofcolors+" colors");
 
 
 
-cc=[];cr=[];p=0;hoset=[];
-rt = (wide+high)/3
-for (i=0;i<=numberofcircles;i++){
-    cc[i]=new Point(~~(R.random_dec()*wide),~~(R.random_dec()*high));
-    cr[i]=~~(rt/6+R.random_dec()*rt/2)-1;
-    hoset[i] =  ~~(R.random_int(10, 40)*ratio);
-}
+
 
 
 
@@ -395,16 +263,7 @@ for (z = 0; z < stacks; z++) {
     drawFrame(z); // Draw the initial frame
     if (z!= stacks-1){
         
-        if (backgroundStyle == 0){vertLines(z,meshDensity,lspread);var backgrounds = "Vertical Lines";}
-        if (backgroundStyle == 1){horzLines(z,meshDensity,lspread);var backgrounds = "Horizontal Lines";}
-        if (backgroundStyle == 2){hexGrid(z,meshDensity);var backgrounds = "Hex";}
-        if (backgroundStyle == 3){ringGrid(z,meshDensity);var backgrounds = "Rings";}
-        if (backgroundStyle == 4){diamondGrid(z,meshDensity);var backgrounds = "Diamonds";}
-        if (backgroundStyle == 5){triGrid(z,meshDensity);var backgrounds = "Triangles";}
-        if (backgroundStyle > 5){horzWaveLines(z,meshDensity,xwav,ywav,xoss,yoss);var backgrounds = "Waves";}
-        if (raining > 5 && backgroundStyle != 0){vertLines(z,meshDensity,lspread);}
-        //holePortal(z);
-        petalPortal(z,petalspiky)
+        hexGrid(z,meshDensity);var backgrounds = "Hex";
     }  
         
     frameIt(z);// finish the layer with a final frame cleanup 
@@ -434,7 +293,6 @@ for (z = 0; z < stacks; z++) {
     features.Depth = stacks*0.0625;
     features.Layers = stacks;
     features.Orientation = orientation;
-    features.Dahlias = numberofcircles;
     features.Background = backgrounds;
     for (l=stacks;l>0;l--){
     var key = "layer: "+(stacks-l+1)
@@ -542,81 +400,8 @@ for (z = 0; z < stacks; z++) {
 
 //vvvvvvvvvvvvvvv PROJECT FUNCTIONS vvvvvvvvvvvvvvv 
 
-function petalPortal(z,curv){
-    for (p=0;p<numberofcircles;p++){
-        var pp=pp+prange;
-        var ocircle = new Path.Circle(cc[p], cr[p]);
-        var icircle = new Path.Circle(cc[p], cr[p]-~~(15*ratio));
-        sheet[z] = sheet[z].subtract(icircle);
-        project.activeLayer.children[project.activeLayer.children.length-1].remove();
-        c = ocircle.subtract(icircle);
-        ocircle.remove();icircle.remove();
-        sheet[z] = c.unite(sheet[z]);
-        c.remove();  
-        project.activeLayer.children[project.activeLayer.children.length-2].remove();
-        if (z<stacks-2 ) {
-            sp=0;i=0;
-            if (z%2 == 0){i=6};
-            for (r=i; r<360; r=r+12){
-                var pr=pr+prange; 
-                spike = new Path.Ellipse({
-                center: [cc[p].x+cr[p], cc[p].y],
-                radius: [~~((cr[p]/(stacks+4))*(stacks-z-1)), ~~(cr[p]/(curv))],});
-
-                var offset = new Path.Circle(cc[p], cr[p]);
-                spire = spike.intersect(offset);
-                spike.remove();offset.remove();
-                spire.rotate(r, cc[p]);
-                //spire.rotate(r+~~(90-noise.get(p,z)*180), cc[p]);
-                //spire.rotate(r+noise.get(r,p,pz)*10, cc[p]); //more variability 
-                sheet[z] = spire.unite(sheet[z]);  
-                spire.remove();
-                project.activeLayer.children[project.activeLayer.children.length-2].remove();
-            }
-        } 
-    }
-}
 
 
-function horzLines(z,ls,shake) {
-    var spacing = ~~((high)/(ls));
-    for (l=1;l<ls+1;l++){
-        p = []
-        y = ~~(l*spacing+rangeInt(~~(shake/ratio),l,z+1));
-        p[0]=new Point(framewidth/2,y)
-        y2 = ~~(l*spacing+rangeInt(~~(shake/ratio),l+10,z+10))
-        p[1]=new Point(wide-framewidth/2,y2)
-        lines = new Path.Line (p[0],p[1]); 
-        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
-        mesh.flatten(4);
-        mesh.smooth();
-        lines.remove();
-        join(z,mesh); 
-        mesh.remove();
-    }
-}
-
-
-function vertLines(z,ls,shake) {
-    //z is the layer to render it to
-    //ls is the number of lines to draw
-    //shake is the variance of the start and end points
-    var spacing = ~~((wide)/(ls));
-    for (l=1;l<ls+1;l++){
-        p = []
-        x = ~~(l*spacing+rangeInt(~~(shake/ratio),l,z+1));
-        p[0]=new Point(x,framewidth/2)
-        x2 = ~~(l*spacing+rangeInt(~~(shake/ratio),l+10,z+10))
-        p[1]=new Point(x2,high-framewidth/2)
-        lines = new Path.Line (p[1],p[0]);
-        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
-        mesh.flatten(4);
-        mesh.smooth();
-        lines.remove();
-        join(z,mesh); 
-        mesh.remove();
-    }
-}
 
 
 function hexGrid(z,across){
@@ -634,103 +419,49 @@ function hexGrid(z,across){
             sides = 6; 
             hex=new Path.RegularPolygon(center, sides, radius);
             hex.rotate(30)
-            mesh = PaperOffset.offsetStroke(hex, ~~(minOffset+oset*(stacks-z-2)),{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(hex, ~~(minOffset),{ cap: 'butt' });
             hex.remove();
             join(z,mesh); 
             mesh.remove();
+
+
+            var vertices = [];
+            for (var i = 0; i < hex.segments.length; i++) {
+            var segment = hex.segments[i];
+            var vertexPoint = segment.point;
+            vertices.push(vertexPoint);
+            }
+            
+            
+            if (z<2){testt(vertices,center)}
+
         }
         r++
     }
 }
 
+function testt(vertix,center){
+    lines = new Path(vertix[0],center); 
+    mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+    lines.remove();
+    join(z,mesh); 
+    mesh.remove();
 
-function ringGrid(z,across){
-    var radius = ~~(wide/(Math.sqrt(3)*across));
-    var oset = ~~(radius/stacks+3);
-    var ystart = ~~((high%(radius*2))/2)
-    r=0;
-    for (y=ystart;y<high;y=y+radius){
-        //if (r%2 == 0) {xstart=~~(3/2*radius)}else{xstart=~~(3/2*radius)*2}
-        if (r%2 == 0) {var xstart=radius+radius*Math.sqrt(3)}else{var xstart=radius}
-        for (x=xstart;x<wide+radius;x=x+radius*Math.sqrt(3)*2){
-            center = new Point(x, y);
-            sides = 6; 
-            path = new Path.Circle(center, radius);
-            mesh = PaperOffset.offsetStroke(path, ~~(minOffset+oset*(stacks-z-2)),{ cap: 'butt' });
-            path.remove();
-            join(z,mesh); 
-            mesh.remove();
-        }
-        r++
-    }
+    lines = new Path(vertix[2],center); 
+    mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+    lines.remove();
+    join(z,mesh); 
+    mesh.remove();
+
+    lines = new Path(vertix[4],center); 
+    mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+    lines.remove();
+    join(z,mesh); 
+    mesh.remove();
+
 }
 
 
-function diamondGrid(z,across){
-    radius = ~~(wide/(across*2));
-    oset = ~~(radius/stacks);
-    ystart = ~~(high%radius/2)
-    r=0;
-    for (y=ystart;y<high;y=y+radius){
-        //if (r%2 == 0) {xstart=~~(3/2*radius)}else{xstart=~~(3/2*radius)*2}
-        if (r%2 == 0) {xstart=radius}else{xstart=radius*2}
-        for (x=xstart;x<wide;x=x+radius*2){
-            center = new Point(x, y);
-            sides = 4; 
-            hex=new Path.RegularPolygon(center, sides, radius);
-            hex.rotate(45)
-            mesh = PaperOffset.offsetStroke(hex, ~~(minOffset+oset*(stacks-z-2)),{ cap: 'butt' });
-            hex.remove();
-            join(z,mesh); 
-            mesh.remove();
-        }
-        r++
-    }
-}
-
-
-function triGrid(z,across){
-    radius = ~~(wide/(across));
-    oset = ~~((radius*Math.cos(0.523599))/stacks-1);
-    ystart = ~~(high%(radius*Math.cos(0.523599))/2)
-    r=0;
-    for (y=ystart;y<high+radius;y=y+3/2*radius){
-        if (r%2 == 0) {xstart=radius*Math.cos(0.523599)}else{xstart=-radius*Math.cos(0.523599)*2}
-        for (x=xstart;x<wide+radius;x=x+radius*Math.cos(0.523599)*2){
-            center = new Point(x, y);
-            sides = 3;  
-                hex=new Path.RegularPolygon(center, sides, radius);
-                mesh = PaperOffset.offsetStroke(hex, ~~(minOffset+oset*(stacks-z-2)),{ cap: 'butt' });
-                hex.remove();
-                join(z,mesh); 
-                mesh.remove();
-        }
-        r++
-    }
-}
-
-
-function horzWaveLines(z,ls,xinit,yinit,xamp,yamp) {
-    shift = ~~(high/(ls+1));
-    oset = ~~(high/(ls+2)/stacks);
-    var path = new Path();
-    path.add(new Point(0, 0));
-    var y = ~~(yinit*ratio);
-    for (var x = ~~(xinit*ratio); x < wide;) {
-        y *= -yamp; y=~~(y);
-        x *= xamp;x=~~(x);
-        path.lineBy(x, y);
-    }
-    path.smooth({ type: 'catmull-rom', factor: 0.5 });
-    for (l=1;l<ls+2;l++){
-        path.position.y += shift;
-        mesh = PaperOffset.offsetStroke(path, ~~(minOffset+oset*(stacks-z-2)),{ cap: 'butt' });
-        mesh.closed = 'true';
-        sheet[z] = (mesh.unite(sheet[z]));
-        mesh.remove();
-    }
-    path.remove();
-}
 
 //^^^^^^^^^^^^^ END PROJECT FUNCTIONS ^^^^^^^^^^^^^ 
 
