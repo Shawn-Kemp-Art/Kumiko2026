@@ -45,7 +45,7 @@ if(new URLSearchParams(window.location.search).get('d')){qcomplexity = new URLSe
 var qorientation =R.random_int(1,2) < 2 ? "portrait" : "landscape";
 var qframecolor = R.random_int(0,3) < 1 ? "White" : R.random_int(1,3) < 2 ? "Mocha" : "Random";
 
-var qdensity = R.random_int(5,15);
+var qdensity = qcomplexity;
 
 var qmatwidth = R.random_int(50,75);
 
@@ -413,7 +413,7 @@ function hexGrid(z,across){
     r=0;
     for (y=ystart;y<high;y=y+~~(Math.sqrt(3)*radius)/2){
         //if (r%2 == 0) {xstart=~~(3/2*radius)}else{xstart=~~(3/2*radius)*2}
-        if (r%2 == 0) {xstart=~~(3/2*radius)}else{xstart=~~(3/2*radius)*2}
+        if (r%2 == 0) {xstart=~~(3/2*radius)}else{xstart=~~(3/2*radius)*-2}
         for (x=xstart;x<wide;x=x+~~(3/2*radius)*2){
             center = new Point(x, y);
             sides = 6; 
@@ -432,35 +432,82 @@ function hexGrid(z,across){
             vertices.push(vertexPoint);
             }
             
-            
-            if (z<2){testt(vertices,center)}
+            if (z == stacks-2 && noise.get(x,y,z)<.5){triangles(vertices,center,z)}
+            if (z<stacks-2 && noise.get(x,y,z)<.4){burst(vertices,center,z)}
+            if (z<stacks-2 && noise.get(x,y,z)<.5){hempleaf(vertices,center,z)}
+            if (z<stacks-2 && noise.get(x,y,z)>.5){starfish(vertices,center,z)}
 
         }
         r++
     }
 }
 
-function testt(vertix,center){
-    lines = new Path(vertix[0],center); 
-    mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
-    lines.remove();
-    join(z,mesh); 
-    mesh.remove();
-
-    lines = new Path(vertix[2],center); 
-    mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
-    lines.remove();
-    join(z,mesh); 
-    mesh.remove();
-
-    lines = new Path(vertix[4],center); 
-    mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
-    lines.remove();
-    join(z,mesh); 
-    mesh.remove();
-
+function triangles(vertix,center,z){
+    for (h=0;h<6;h++){
+        lines = new Path(vertix[h],center); 
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+        lines.remove();join(z,mesh);mesh.remove();
+         }
 }
 
+
+function burst(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        p = equallySpacedPointsBetween(a, b, 3);
+         for (t=0;t<p.length;t++){
+            lines = new Path(p[t],center); 
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            lines.remove();join(z,mesh);mesh.remove();
+         }
+    }
+}
+
+function hempleaf(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        pc = equallySpacedPointsBetween(a, b, 1);
+        pc1=equallySpacedPointsBetween(pc[0], center, 4);
+            lines = new Path(pc1[0],center); 
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            lines.remove();join(z,mesh);mesh.remove();
+        p1 = equallySpacedPointsBetween(a, center, 4);
+        p2 = equallySpacedPointsBetween(b, center, 4);
+            lines = new Path(a,pc1[0],b); 
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            lines.remove();join(z,mesh);mesh.remove();
+    }
+}
+
+
+
+function starfish(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        pc = equallySpacedPointsBetween(a, b, 1);
+            lines = new Path(pc[0],center); 
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            lines.remove();join(z,mesh);mesh.remove();
+            p1 = equallySpacedPointsBetween(a, center, 2);
+            p2 = equallySpacedPointsBetween(b, center, 2);
+            lines = new Path(p1[0],pc[0],p2[0]); 
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            lines.remove();join(z,mesh);mesh.remove();
+    }
+}
+
+function equallySpacedPointsBetween(a, b, count) {
+    let ab = b.subtract(a);
+    let step = ab.divide(count + 1);
+    let pts = [];
+    for (let i = 1; i <= count; i++) {
+      pts.push(a.add(step.multiply(i)));
+    }
+    return pts;
+  }
 
 
 //^^^^^^^^^^^^^ END PROJECT FUNCTIONS ^^^^^^^^^^^^^ 
