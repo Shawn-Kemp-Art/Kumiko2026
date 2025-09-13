@@ -155,7 +155,7 @@ definitions = [
 
 $fx.params(definitions)
 var scale = $fx.getParam('size');
-var stacks = $fx.getParam('layers'); stacks=5
+var stacks = $fx.getParam('layers'); 
 var numofcolors = $fx.getParam('colors');
 var meshDensity = $fx.getParam("density");
 console.log("density: "+meshDensity)
@@ -419,7 +419,7 @@ function hexGrid(z,across){
             sides = 6; 
             hex=new Path.RegularPolygon(center, sides, radius);
             hex.rotate(30)
-            mesh = PaperOffset.offsetStroke(hex, ~~(minOffset),{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(hex, ~~(minOffset),{ cap: 'round' });
             hex.remove();
             join(z,mesh); 
             mesh.remove();
@@ -445,7 +445,7 @@ function hexGrid(z,across){
 function triangles(vertix,center,z){
     for (h=0;h<6;h++){
         lines = new Path(vertix[h],center); 
-        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
         lines.remove();join(z,mesh);mesh.remove();
          }
 }
@@ -458,7 +458,7 @@ function burst(vertix,center,z){
         p = equallySpacedPointsBetween(a, b, 3);
          for (t=0;t<p.length;t++){
             lines = new Path(p[t],center); 
-            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
             lines.remove();join(z,mesh);mesh.remove();
          }
     }
@@ -471,12 +471,12 @@ function hempleaf(vertix,center,z){
         pc = equallySpacedPointsBetween(a, b, 1);
         pc1=equallySpacedPointsBetween(pc[0], center, 4);
             lines = new Path(pc1[0],center); 
-            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
             lines.remove();join(z,mesh);mesh.remove();
         p1 = equallySpacedPointsBetween(a, center, 4);
         p2 = equallySpacedPointsBetween(b, center, 4);
             lines = new Path(a,pc1[0],b); 
-            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
             lines.remove();join(z,mesh);mesh.remove();
     }
 }
@@ -489,12 +489,12 @@ function starfish(vertix,center,z){
         b = vertix[h+1]; if(h==5){b = vertix[0]}
         pc = equallySpacedPointsBetween(a, b, 1);
             lines = new Path(pc[0],center); 
-            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
             lines.remove();join(z,mesh);mesh.remove();
             p1 = equallySpacedPointsBetween(a, center, 2);
             p2 = equallySpacedPointsBetween(b, center, 2);
             lines = new Path(p1[0],pc[0],p2[0]); 
-            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'butt' });
+            mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
             lines.remove();join(z,mesh);mesh.remove();
     }
 }
