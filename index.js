@@ -39,7 +39,7 @@ var qcolors = R.random_int(1,6);
 if(new URLSearchParams(window.location.search).get('c')){qcolors = new URLSearchParams(window.location.search).get('c')}; //number of colors
 var qsize = "2";
 if(new URLSearchParams(window.location.search).get('s')){qsize = new URLSearchParams(window.location.search).get('s')}; //size
-var qcomplexity = R.random_int(1,10);
+var qcomplexity = R.random_int(1,15);
 if(new URLSearchParams(window.location.search).get('d')){qcomplexity = new URLSearchParams(window.location.search).get('d')}; //size
 
 var qorientation =R.random_int(1,2) < 2 ? "portrait" : "landscape";
@@ -57,9 +57,9 @@ definitions = [
         id: "layers",
         name: "Layers",
         type: "number",
-        default: 12,
+        default: 6,
         options: {
-            min: 6,
+            min: 1,
             max: 24,
             step: 1,
         },  
@@ -130,7 +130,7 @@ definitions = [
         type: "number",
         default: qdensity,
         options: {
-            min: 5,
+            min: 1,
             max: 15,
             step: 1,
         },  
@@ -254,17 +254,19 @@ linecolor={"Hex":"#4C4638", "Name":"Mocha"};
 
 sheet = []; //This will hold each layer
 
-var px=0;var py=0;var pz=0;var prange=.6; 
+var px=0;var py=0;var pz=0;var prange=.3; 
 
 // iterate through and draw each layer in the stacks
 for (z = 0; z < stacks; z++) {
     pz=pz+prange;
 
     drawFrame(z); // Draw the initial frame
-    if (z!= stacks-1){
+    if (z!= stacks-1 ){
         
         hexGrid(z,meshDensity);var backgrounds = "Hex";
     }  
+
+    //if (z == 0) {solid(z)}
         
     frameIt(z);// finish the layer with a final frame cleanup 
 
@@ -431,11 +433,36 @@ function hexGrid(z,across){
             var vertexPoint = segment.point;
             vertices.push(vertexPoint);
             }
+            //for testing
+
+            //if (z == stacks-2){triangles(vertices,center,z)}
+
+            //if (z == stacks-3){triangles(vertices,center,z)}
+            //if (z == stacks-3){burst(vertices,center,z)}
+            //if (z == stacks-3){hempleaf(vertices,center,z)}
+            //if (z == stacks-3){starfish(vertices,center,z)}
+            //if (z == stacks-3){flower(vertices,center,z)}
+            //if (z == stacks-3){swirls(vertices,center,z)}
+            //if (z == stacks-3){bows(vertices,center,z)}
+            //if (z == stacks-3){petals(vertices,center,z)}
+            //if (z == stacks-3){web(vertices,center,z)}
+
+
             
-            if (z == stacks-2 && noise.get(x,y,z)<.5){triangles(vertices,center,z)}
-            if (z<stacks-2 && noise.get(x,y,z)<.4){burst(vertices,center,z)}
-            if (z<stacks-2 && noise.get(x,y,z)<.5){hempleaf(vertices,center,z)}
-            if (z<stacks-2 && noise.get(x,y,z)>.5){starfish(vertices,center,z)}
+
+            if (z < stacks-1 && Math.floor(noise.get(x,y,pz)*10) > 5){triangles(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 2){burst(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 3){hempleaf(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 4){starfish(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 5){flower(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 6){swirls(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 7){bows(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 8){petals(vertices,center,z)}
+            if (z < stacks-3 && Math.floor(noise.get(x,y,pz)*10) == 9){web(vertices,center,z)}
+            //if (z<stacks-3 && noise.get(x,y,z)<.4){burst(vertices,center,z)}
+            //if (z<stacks-3 && noise.get(x,y,z)<.5){hempleaf(vertices,center,z)}
+            //if (z<stacks-3 && noise.get(x,y,z)>.5){starfish(vertices,center,z)}
+            //if (z<stacks-3 && noise.get(x,y,z)>.5){bows(vertices,center,z)}
 
         }
         r++
@@ -445,6 +472,82 @@ function hexGrid(z,across){
 function triangles(vertix,center,z){
     for (h=0;h<6;h++){
         lines = new Path(vertix[h],center); 
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+         }
+}
+
+function flower(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        lines = new Path.Arc(a,center,b)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+         }
+}
+
+function swirls(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        pc = equallySpacedPointsBetween(a, b, 1);
+        pc1=equallySpacedPointsBetween(pc[0], center, 2);
+        lines = new Path.Arc(a,pc1[1],b)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+         }
+}
+
+function bows(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        pc = equallySpacedPointsBetween(a, b, 1);
+        pc1=equallySpacedPointsBetween(pc[0], center, 16);
+        lines = new Path.Arc(a,pc1[1],b)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+
+        d = pc[0].getDistance(pc1[1]);
+        p= equallySpacedPointsBetween(a, center, 1);
+        dir = a.subtract(center);                 // direction of the line
+        normal = dir.rotate(90).normalize(d);// 90° left normal of length d
+        b = p[0].add(normal);         // offset point on the "left" side
+        lines = new Path.Arc(a,b,center)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+
+        normal = dir.rotate(-90).normalize(d);// 90° left normal of length d
+        b = p[0].add(normal);         // offset point on the "left" side
+        lines = new Path.Arc(a,b,center)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+         }
+}
+
+function petals(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        pc = equallySpacedPointsBetween(a, b, 1);
+        pc1=equallySpacedPointsBetween(pc[0], center, 10);
+        lines = new Path.Arc(a,pc1[1],b)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+
+        d = pc[0].getDistance(pc1[1]);
+        p= equallySpacedPointsBetween(a, center, 1);
+        dir = a.subtract(center);                 // direction of the line
+        normal = dir.rotate(90).normalize(d);// 90° left normal of length d
+        b = p[0].add(normal);         // offset point on the "left" side
+        lines = new Path.Arc(a,b,center)
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+
+        normal = dir.rotate(-90).normalize(d);// 90° left normal of length d
+        b = p[0].add(normal);         // offset point on the "left" side
+        lines = new Path.Arc(a,b,center)
         mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
         lines.remove();join(z,mesh);mesh.remove();
          }
@@ -497,6 +600,28 @@ function starfish(vertix,center,z){
             mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
             lines.remove();join(z,mesh);mesh.remove();
     }
+}
+
+function web(vertix,center,z){
+    for (h=0;h<6;h++){
+        a = vertix[h];
+        b = vertix[h+1]; if(h==5){b = vertix[0]}
+        c1 = vertix[h+2]; if(h==4){c1 = vertix[0]};if(h==5){c1 = vertix[1]}
+        pc = equallySpacedPointsBetween(a, b, 1);
+        pc2 = equallySpacedPointsBetween(pc[0], center, 2);
+        pb = equallySpacedPointsBetween(b, c1, 1);
+        pb1 = equallySpacedPointsBetween(pb[0], center, 2);
+        //pb2 = equallySpacedPointsBetween(pb[0], center, 1);
+        
+        lines = new Path(pc[0],pc2[0]); 
+        
+        
+        lines.add(pb1[0])
+        //lines.add(pc4[2])
+        //lines.add(pc3[0])
+        mesh = PaperOffset.offsetStroke(lines, minOffset,{ cap: 'round' });
+        lines.remove();join(z,mesh);mesh.remove();
+         }
 }
 
 function equallySpacedPointsBetween(a, b, count) {
