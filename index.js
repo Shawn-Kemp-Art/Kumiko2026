@@ -46,7 +46,6 @@ var qorientation =R.random_int(1,2) < 2 ? "portrait" : "landscape";
 var qframecolor = R.random_int(0,3) < 1 ? "White" : R.random_int(1,3) < 2 ? "Mocha" : "Random";
 
 var qdensity = qcomplexity;
-
 var qmatwidth = R.random_int(50,75);
 
 
@@ -57,7 +56,7 @@ definitions = [
         id: "layers",
         name: "Layers",
         type: "number",
-        default: 6,
+        default: 10,
         options: {
             min: 1,
             max: 24,
@@ -249,15 +248,20 @@ linecolor={"Hex":"#4C4638", "Name":"Mocha"};
 
 
 
-//************* Draw the layers ************* 
+//************* Draw the layers *************
 
+var features = {};
 
 sheet = []; //This will hold each layer
 
 var px=0;var py=0;var pz=0;var prange=.3; 
 
 // iterate through and draw each layer in the stacks
-for (z = 0; z < stacks; z++) {
+(async () => {
+
+    paper.view.autoUpdate = false;
+
+    for (z = 0; z < stacks; z++) {
     pz=pz+prange;
 
     drawFrame(z); // Draw the initial frame
@@ -280,17 +284,14 @@ for (z = 0; z < stacks; z++) {
     
     console.log(z)//Show layer completed in console
 
-
-    
-
-    
-    
-}//end z loop
+    paper.view.update();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    }//end z loop
 
 //--------- Finish up the preview ----------------------- 
 
     // Build the features and trigger an fxhash preview
-    var features = {};
+    features = {};
     features.Size =  ~~(wide/100/ratio)+" x "+~~(high/100/ratio)+" inches";
     features.Width = ~~(wide/100/ratio);
     features.Height = ~~(high/100/ratio);
@@ -315,78 +316,17 @@ for (z = 0; z < stacks; z++) {
     sheet[stacks+1].sendToBack();
 
     
-     //send to studio.shawnkemp.art
-     if(new URLSearchParams(window.location.search).get('skart')){sendAllExports()}; 
+//Begin send to studio.shawnkemp.art **************************************************************
+     studioAPI.setApiBase('https://studio-shawnkemp-art.vercel.app');
+     if(new URLSearchParams(window.location.search).get('skart')){sendAllExports()};
+//End send to studio.shawnkemp.art **************************************************************
 
-        async function sendAllExports() {
-           paper.view.update();
-           await sendCanvasToBubbleAPI(myCanvas, $fx.hash);
-           await sendSVGToBubbleAPI($fx.hash);
-           // send colors
-           var content = JSON.stringify(features,null,2);
-           await sendTextToBubbleAPI("Colors-"+$fx.hash, content)
-           // 2. Add frame
-           floatingframe();
-           paper.view.update();
-           // 3. Framed PNGs (Black, White, Walnut, Maple)
-           var frameOptions = [
-               { name: "Black", hex: "#1f1f1f" },
-               { name: "White", hex: "#f9f9f9" },
-               { name: "Walnut", hex: "#60513D" },
-               { name: "Maple", hex: "#ebd9c0" }
-           ];
-           for (var i = 0; i < frameOptions.length; i++) {
-               woodframe.style = { fillColor: frameOptions[i].hex };
-               var fileName = "Framed" + frameOptions[i].name + "-" + $fx.hash;
-               paper.view.update();
-               await sendCanvasToBubbleAPI(myCanvas, fileName);
-           }
-           // 4. Remove frame
-           floatingframe();
-           // 5. Blueprint SVG
-           for (var z = 0; z < stacks; z++) {
-               sheet[z].style = {
-                   fillColor: null,
-                   strokeWidth: 0.1,
-                   strokeColor: lightburn[stacks - z - 1].Hex,
-                   shadowColor: null,
-                   shadowBlur: null,
-                   shadowOffset: null
-               };
-               sheet[z].selected = true;
-           }
-           paper.view.update();
-           await sendSVGToBubbleAPI("Blueprint-" + $fx.hash);
-           // 6. Plotting SVG
-           for (var z = 0; z < stacks; z++) {
-               sheet[z].style = {
-                   fillColor: null,
-                   strokeWidth: 0.1,
-                   strokeColor: plottingColors[stacks - z - 1].Hex,
-                   shadowColor: null,
-                   shadowBlur: null,
-                   shadowOffset: null
-               };
-               sheet[z].selected = true;
-           }
-           for (var z = 0; z < stacks; z++) {
-               if (z < stacks - 1) {
-                   for (var zs = z + 1; zs < stacks; zs++) {
-                       sheet[z] = sheet[z].subtract(sheet[zs]);
-                       sheet[z].previousSibling.remove();
-                   }
-               }
-           }
-           paper.view.update();
-           await sendSVGToBubbleAPI("Plotting-" + $fx.hash);
-           sendFeaturesAPI(features);
-           console.log("All exports sent!");
-       }
+    paper.view.autoUpdate = true;
+    paper.view.update();
 
     var finalTime = new Date().getTime();
     var renderTime = (finalTime - initialTime)/1000
     console.log ('this took : ' +  renderTime.toFixed(2) + ' seconds' );
-
 
         //if (testingGo == 'true'){refreshit();}
 
@@ -398,11 +338,155 @@ for (z = 0; z < stacks; z++) {
         window.open('file:///Users/shawnkemp/dev/Wild%20Dahlias%20v2/index.html?testing=true', '_blank');
         }
 
-       
-       
+})(); // end async IIFE
 
 
-//vvvvvvvvvvvvvvv PROJECT FUNCTIONS vvvvvvvvvvvvvvv 
+async function sendAllExports() {
+
+    paper.view.update();
+    // Send canvas as PNG
+    await studioAPI.sendCanvas(myCanvas, $fx.hash, $fx.hash+".png");
+
+    // Send SVG
+    await studioAPI.sendSVG(project.exportSVG({asString: true}), $fx.hash, $fx.hash+".svg");
+
+    // send colors
+    var content = JSON.stringify(features,null,2);
+
+    // Send text/JSON
+    await studioAPI.sendText(JSON.stringify(colors), $fx.hash, "Colors-"+$fx.hash+".json");
+
+    // 2. Add frame
+    floatingframe();
+    paper.view.update();
+    // 3. Framed PNGs (Black, White, Walnut, Maple)
+    var frameOptions = [
+        { name: "Black", hex: "#1f1f1f" },
+        { name: "White", hex: "#f9f9f9" },
+        { name: "Walnut", hex: "#60513D" },
+        { name: "Maple", hex: "#ebd9c0" }
+    ];
+    for (var i = 0; i < frameOptions.length; i++) {
+        woodframe.style = { fillColor: frameOptions[i].hex };
+        var fileName = "Framed" + frameOptions[i].name + "-" + $fx.hash;
+        paper.view.update();
+
+        await studioAPI.sendCanvas(myCanvas, $fx.hash, fileName+".png");
+    }
+    // 4. Remove frame
+    floatingframe();
+    // 5. Blueprint SVG
+    for (var z = 0; z < stacks; z++) {
+        sheet[z].style = {
+            fillColor: null,
+            strokeWidth: 0.1,
+            strokeColor: lightburn[stacks - z - 1].Hex,
+            shadowColor: null,
+            shadowBlur: null,
+            shadowOffset: null
+        };
+        sheet[z].selected = true;
+    }
+    paper.view.update();
+
+    // Send SVG
+    await studioAPI.sendSVG(project.exportSVG({asString: true}), $fx.hash, "Blueprint-" + $fx.hash+".svg");
+    // 6. Plotting SVG
+    for (var z = 0; z < stacks; z++) {
+        sheet[z].style = {
+            fillColor: null,
+            strokeWidth: 0.1,
+            strokeColor: plottingColors[stacks - z - 1].Hex,
+            shadowColor: null,
+            shadowBlur: null,
+            shadowOffset: null
+        };
+        sheet[z].selected = true;
+    }
+    for (var z = 0; z < stacks; z++) {
+        if (z < stacks - 1) {
+            for (var zs = z + 1; zs < stacks; zs++) {
+                var newSheet = clipSubtract(sheet[z], sheet[zs]);
+                sheet[z].remove();
+                sheet[z] = newSheet;
+            }
+        }
+    }
+    paper.view.update();
+    // Send SVG
+    await studioAPI.sendSVG(project.exportSVG({asString: true}), $fx.hash, "Plotting-" + $fx.hash+".svg");
+
+    // Send features
+    await studioAPI.sendFeatures($fx.hash, features);
+
+    console.log("All exports sent!");
+    studioAPI.signalComplete();
+}
+
+
+//vvvvvvvvvvvvvvv CLIPPER BOOLEAN ENGINE vvvvvvvvvvvvvvv
+var CLIP_SCALE = 100;   // Integer precision for Clipper (100 = 0.01 unit resolution)
+var CLIP_FLATTEN = 0.1; // Bezier-to-polygon tolerance (lower = smoother, more points)
+
+function _toClipperPaths(paperItem) {
+    var clone = paperItem.clone({ insert: false });
+    clone.flatten(CLIP_FLATTEN);
+    var children = (clone.className === 'CompoundPath') ? clone.children : [clone];
+    var result = [];
+    for (var i = 0; i < children.length; i++) {
+        var segs = children[i].segments;
+        if (segs.length < 3) continue;
+        var pts = new Array(segs.length);
+        for (var j = 0; j < segs.length; j++) {
+            pts[j] = { X: Math.round(segs[j].point.x * CLIP_SCALE),
+                       Y: Math.round(segs[j].point.y * CLIP_SCALE) };
+        }
+        result.push(pts);
+    }
+    clone.remove();
+    return result;
+}
+
+function _fromClipperPaths(clipperPaths) {
+    if (!clipperPaths || clipperPaths.length === 0) return new Path();
+    var compound = new CompoundPath({});
+    for (var i = 0; i < clipperPaths.length; i++) {
+        var pts = clipperPaths[i];
+        if (pts.length < 3) continue;
+        var paperPts = new Array(pts.length);
+        for (var j = 0; j < pts.length; j++) {
+            paperPts[j] = new Point(pts[j].X / CLIP_SCALE, pts[j].Y / CLIP_SCALE);
+        }
+        compound.addChild(new Path({ segments: paperPts, closed: true, insert: false }));
+    }
+    // Use non-zero winding — matches Paper.js canvas default and Clipper's output orientation.
+    // CleanPolygons removes near-degenerate edges that can cause winding flips at fine tolerances.
+    ClipperLib.Clipper.CleanPolygons(clipperPaths, 0.5);
+    compound.reorient(true, true);
+    return compound;
+}
+
+function _clipBool(a, b, clipType) {
+    var savedStyle = a.style;
+    var clipper = new ClipperLib.Clipper();
+    clipper.AddPaths(_toClipperPaths(a), ClipperLib.PolyType.ptSubject, true);
+    clipper.AddPaths(_toClipperPaths(b), ClipperLib.PolyType.ptClip, true);
+    var solution = new ClipperLib.Paths();
+    clipper.Execute(clipType, solution,
+        ClipperLib.PolyFillType.pftNonZero,
+        ClipperLib.PolyFillType.pftNonZero);
+    var result = _fromClipperPaths(solution);
+    result.style = savedStyle;
+    return result;
+}
+
+function clipUnite(a, b)     { return _clipBool(a, b, ClipperLib.ClipType.ctUnion); }
+function clipSubtract(a, b)  { return _clipBool(a, b, ClipperLib.ClipType.ctDifference); }
+function clipIntersect(a, b) { return _clipBool(a, b, ClipperLib.ClipType.ctIntersection); }
+//^^^^^^^^^^^^^ END CLIPPER BOOLEAN ENGINE ^^^^^^^^^^^^^
+
+
+//vvvvvvvvvvvvvvv PROJECT FUNCTIONS vvvvvvvvvvvvvvv
 
 
 
@@ -648,7 +732,7 @@ function floatingframe(){
   if (framegap.isEmpty()){
         var outsideframe = new Path.Rectangle(new Point(0, 0),new Size(~~(wide+frameReveal*2), ~~(high+frameReveal*2)), framradius)
         var insideframe = new Path.Rectangle(new Point(frameReveal, frameReveal),new Size(wide, high)) 
-        framegap = outsideframe.subtract(insideframe);
+        framegap = clipSubtract(outsideframe, insideframe);
         outsideframe.remove();insideframe.remove();
         framegap.scale(2.2);
         framegap.position = new Point(paper.view.viewSize.width/2, paper.view.viewSize.height/2);
@@ -658,7 +742,7 @@ function floatingframe(){
     if (woodframe.isEmpty()){
         var outsideframe = new Path.Rectangle(new Point(0, 0),new Size(wide+frameWide*2+frameReveal*2, high+frameWide*2+frameReveal*2), framradius)
         var insideframe = new Path.Rectangle(new Point(frameWide, frameWide),new Size(wide+frameReveal*2, high+frameReveal*2)) 
-        woodframe = outsideframe.subtract(insideframe);
+        woodframe = clipSubtract(outsideframe, insideframe);
         outsideframe.remove();insideframe.remove();
         woodframe.scale(2.2);
         woodframe.position = new Point(paper.view.viewSize.width/2, paper.view.viewSize.height/2);
@@ -676,31 +760,34 @@ function rangeInt(range,x,y,z){
 
 // Add shape s to sheet z
 function join(z,s){
-    sheet[z] = (s.unite(sheet[z]));
+    var newSheet = clipUnite(sheet[z], s);
+    sheet[z].remove();
     s.remove();
-    project.activeLayer.children[project.activeLayer.children.length-2].remove();
+    sheet[z] = newSheet;
 }
 
 // Subtract shape s from sheet z
 function cut(z,s){
-    sheet[z] = sheet[z].subtract(s);
+    var newSheet = clipSubtract(sheet[z], s);
+    sheet[z].remove();
     s.remove();
-    project.activeLayer.children[project.activeLayer.children.length-2].remove();
+    sheet[z] = newSheet;
 }
 
 function drawFrame(z){
     var outsideframe = new Path.Rectangle(new Point(0, 0),new Size(wide, high), framradius)
-    var insideframe = new Path.Rectangle(new Point(framewidth, framewidth),new Size(wide-framewidth*2, high-framewidth*2)) 
-    sheet[z] = outsideframe.subtract(insideframe);
+    var insideframe = new Path.Rectangle(new Point(framewidth, framewidth),new Size(wide-framewidth*2, high-framewidth*2))
+    sheet[z] = clipSubtract(outsideframe, insideframe);
     outsideframe.remove();insideframe.remove();
 }
 
 
-function solid(z){ 
+function solid(z){
     outsideframe = new Path.Rectangle(new Point(1,1),new Size(wide-1, high-1), framradius)
-    sheet[z] = sheet[z].unite(outsideframe);
+    var newSheet = clipUnite(sheet[z], outsideframe);
+    sheet[z].remove();
     outsideframe.remove();
-    project.activeLayer.children[project.activeLayer.children.length-2].remove();
+    sheet[z] = newSheet;
 }
 
 
@@ -708,20 +795,21 @@ function solid(z){
 function frameIt(z){
         //Trim to size
         var outsideframe = new Path.Rectangle(new Point(0, 0),new Size(wide, high), framradius)
-        sheet[z] = outsideframe.intersect(sheet[z]);
+        var trimmed = clipIntersect(outsideframe, sheet[z]);
         outsideframe.remove();
-        project.activeLayer.children[project.activeLayer.children.length-2].remove();
+        sheet[z].remove();
+        sheet[z] = trimmed;
 
         //Make sure there is still a solid frame
         var outsideframe = new Path.Rectangle(new Point(0, 0),new Size(wide, high), framradius)
-        var insideframe = new Path.Rectangle(new Point(framewidth, framewidth),new Size(wide-framewidth*2, high-framewidth*2)) 
-        var frame = outsideframe.subtract(insideframe);
+        var insideframe = new Path.Rectangle(new Point(framewidth, framewidth),new Size(wide-framewidth*2, high-framewidth*2))
+        var frame = clipSubtract(outsideframe, insideframe);
         outsideframe.remove();insideframe.remove();
-        sheet[z] = sheet[z].unite(frame);
+        var newSheet = clipUnite(sheet[z], frame);
+        sheet[z].remove();
         frame.remove();
-        project.activeLayer.children[project.activeLayer.children.length-2].remove();
-         
-        
+        sheet[z] = newSheet;
+
         sheet[z].style = {fillColor: colors[z].Hex, strokeColor: linecolor.Hex, strokeWidth: 1*ratio,shadowColor: new Color(0,0,0,[0.3]),shadowBlur: 20,shadowOffset: new Point((stacks-z)*2.3, (stacks-z)*2.3)};
 }
 
@@ -842,10 +930,11 @@ document.addEventListener('keypress', (event) => {
             for (z=0;z<stacks;z++){
                 if (z<stacks-1){
                     for (zs=z+1;zs<stacks;zs++){
-                        sheet[z] = sheet[z].subtract(sheet[zs]);
-                        sheet[z].previousSibling.remove();
+                        var newSheet = clipSubtract(sheet[z], sheet[zs]);
+                        sheet[z].remove();
+                        sheet[z] = newSheet;
                     }
-                } 
+                }
                 console.log("optimizing")
             }
         }
