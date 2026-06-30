@@ -56,7 +56,7 @@ definitions = [
         id: "layers",
         name: "Layers",
         type: "number",
-        default: 10,
+        default: 12,
         options: {
             min: 1,
             max: 24,
@@ -260,6 +260,12 @@ var px=0;var py=0;var pz=0;var prange=.3;
 (async () => {
 
     paper.view.autoUpdate = false;
+
+    // Clipper cold-start warm-up: force paper.js to yield/render once before the
+    // first real boolean op, otherwise the very first clip op (z=0 frame)
+    // silently returns empty and that layer renders blank.
+    paper.view.update();
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     for (z = 0; z < stacks; z++) {
     pz=pz+prange;
